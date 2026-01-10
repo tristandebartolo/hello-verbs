@@ -14,8 +14,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Verbes anglais",
-  description: "Application pour réviser les verbes anglais",
+  title: "English Verbs",
+  description: "Application pour réviser les verbes anglais avec conjugaisons et exemples",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "English Verbs",
+  },
+  icons: {
+    icon: "/icons/icon.svg",
+    apple: "/icons/icon.svg",
+  },
 };
 
 const themeScript = `
@@ -35,6 +45,9 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#18181b" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body

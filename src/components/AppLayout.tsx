@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
 
 type AppLayoutProps = {
@@ -7,10 +9,13 @@ type AppLayoutProps = {
 };
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      <Sidebar />
-      <main className="md:pl-72">
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <main className="min-h-screen md:pl-72">
+        <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
         {children}
       </main>
     </div>
