@@ -88,7 +88,7 @@ export function KanbanColumn({ category, verbs }: KanbanColumnProps) {
   return (
     <div
       ref={columnRef}
-      className={`flex min-w-[280px] flex-1 flex-col rounded-xl border-2 transition-colors ${
+      className={`flex min-w-70 flex-1 flex-col rounded-xl border-2 transition-colors ${
         isDragOver
           ? `${config.borderColor} ${config.bgColor}`
           : "border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900"
