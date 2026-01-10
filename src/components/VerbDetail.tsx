@@ -36,7 +36,7 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
   const isCurrentPlaying = (id: string) => isSpeaking && currentPlayingId === id;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 pl-16 sm:px-6 md:pl-6 lg:px-8">
+    <div className="mx-auto max-w-4xl p-6 lg:px-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/"
@@ -238,13 +238,13 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
           <h2 className="mb-6 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Conjugaisons
           </h2>
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
             {conjugations.map((conjugation) => (
               <div
                 key={conjugation.tense}
                 className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
               >
-                <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+                <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-3 dark:border-zinc-800">
                   <div>
                     <Link
                       href={`/verb/${verbSlug}/exemples/${getTenseNameToSlug(conjugation.tense)}`}

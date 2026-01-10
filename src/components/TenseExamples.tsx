@@ -36,7 +36,7 @@ export function TenseExamples({
   const isCurrentPlaying = (id: string) => isSpeaking && currentPlayingId === id;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 pl-16 sm:px-6 md:pl-6 lg:px-8">
+    <div className="mx-auto max-w-4xl p-6 lg:px-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <Link
           href={`/verb/${verb.infinitive}`}

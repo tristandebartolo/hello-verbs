@@ -11,7 +11,7 @@ type NavbarProps = {
 export function Navbar({ onMenuClick }: NavbarProps) {
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/80">
-      <div className="flex h-full items-center justify-between px-4">
+      <div className="flex h-full items-center justify-between px-6">
         {/* Left side: Menu button */}
         <div className="flex items-center gap-3">
           <button
