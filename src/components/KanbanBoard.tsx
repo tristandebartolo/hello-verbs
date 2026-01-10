@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useCallback, createContext, useContext } from "react";
 import { verbs, type Verb } from "@/data/verbs";
 import { useFavorites } from "@/hooks/useFavorites";
 import {
@@ -11,9 +11,26 @@ import { KanbanColumn } from "@/components/KanbanColumn";
 
 const categories: LearningCategory[] = ["all", "learning", "next", "done"];
 
+type DragContextType = {
+  draggedVerb: string | null;
+  setDraggedVerb: (verb: string | null) => void;
+  onDrop: (verbInfinitive: string, category: LearningCategory) => void;
+};
+
+const DragContext = createContext<DragContextType | null>(null);
+
+export function useDragContext() {
+  const context = useContext(DragContext);
+  if (!context) {
+    throw new Error("useDragContext must be used within KanbanBoard");
+  }
+  return context;
+}
+
 export function KanbanBoard() {
   const { favorites } = useFavorites();
   const { getVerbsByCategory, moveVerb } = useFavoriteCategories();
+  const [draggedVerb, setDraggedVerb] = useState<string | null>(null);
 
   const verbsByCategory = useMemo(() => {
     return getVerbsByCategory(favorites);
@@ -32,9 +49,22 @@ export function KanbanBoard() {
       .sort((a, b) => a.infinitive.localeCompare(b.infinitive));
   };
 
-  const handleDrop = (verbInfinitive: string, category: LearningCategory) => {
-    moveVerb(verbInfinitive, category);
-  };
+  const handleDrop = useCallback(
+    (verbInfinitive: string, category: LearningCategory) => {
+      moveVerb(verbInfinitive, category);
+      setDraggedVerb(null);
+    },
+    [moveVerb]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      draggedVerb,
+      setDraggedVerb,
+      onDrop: handleDrop,
+    }),
+    [draggedVerb, handleDrop]
+  );
 
   if (favorites.size === 0) {
     return (
@@ -65,15 +95,16 @@ export function KanbanBoard() {
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
-      {categories.map((category) => (
-        <KanbanColumn
-          key={category}
-          category={category}
-          verbs={getVerbsForCategory(category)}
-          onDrop={handleDrop}
-        />
-      ))}
-    </div>
+    <DragContext.Provider value={contextValue}>
+      <div className="flex gap-4 overflow-x-auto pb-4">
+        {categories.map((category) => (
+          <KanbanColumn
+            key={category}
+            category={category}
+            verbs={getVerbsForCategory(category)}
+          />
+        ))}
+      </div>
+    </DragContext.Provider>
   );
 }

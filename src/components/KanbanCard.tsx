@@ -1,33 +1,78 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { type Verb } from "@/data/verbs";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useDragContext } from "@/components/KanbanBoard";
 
 type KanbanCardProps = {
   verb: Verb;
-  isDragging?: boolean;
 };
 
-export function KanbanCard({ verb, isDragging }: KanbanCardProps) {
+export function KanbanCard({ verb }: KanbanCardProps) {
   const { toggleFavorite } = useFavorites();
+  const { draggedVerb, setDraggedVerb } = useDragContext();
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const isDragging = draggedVerb === verb.infinitive;
+
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData("text/plain", verb.infinitive);
+    e.dataTransfer.effectAllowed = "move";
+    setDraggedVerb(verb.infinitive);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedVerb(null);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+
+    // Start drag if moved more than 10px
+    if (deltaX > 10 || deltaY > 10) {
+      if (!isDragging) {
+        setDraggedVerb(verb.infinitive);
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartRef.current = null;
+    // Don't reset draggedVerb here - let the column handle the drop
+  };
 
   return (
     <div
       draggable
-      onDragStart={(e) => {
-        e.dataTransfer.setData("text/plain", verb.infinitive);
-        e.dataTransfer.effectAllowed = "move";
-      }}
-      className={`group cursor-grab rounded-lg border border-zinc-200 bg-white p-3 shadow-sm transition-all active:cursor-grabbing dark:border-zinc-700 dark:bg-zinc-800 ${
-        isDragging ? "rotate-2 scale-105 shadow-lg" : "hover:shadow-md"
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      data-verb={verb.infinitive}
+      className={`group touch-none select-none rounded-lg border border-zinc-200 bg-white p-3 shadow-sm transition-all dark:border-zinc-700 dark:bg-zinc-800 ${
+        isDragging
+          ? "scale-105 opacity-50 shadow-lg ring-2 ring-blue-500"
+          : "cursor-grab hover:shadow-md active:cursor-grabbing"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
         <Link
           href={`/verb/${verb.infinitive}`}
           className="flex-1"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            if (isDragging) e.preventDefault();
+          }}
         >
           <div className="font-medium text-zinc-900 dark:text-zinc-100">
             {verb.infinitive}
@@ -40,9 +85,11 @@ export function KanbanCard({ verb, isDragging }: KanbanCardProps) {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            toggleFavorite(verb.infinitive);
+            if (!isDragging) {
+              toggleFavorite(verb.infinitive);
+            }
           }}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-amber-500 opacity-0 transition-opacity hover:bg-zinc-100 group-hover:opacity-100 dark:hover:bg-zinc-700"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-amber-500 opacity-100 transition-opacity hover:bg-zinc-100 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-zinc-700"
           aria-label="Retirer des favoris"
           title="Retirer des favoris"
         >
