@@ -173,10 +173,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <span className="text-sm text-zinc-600 dark:text-zinc-400">Voix</span>
              <VoiceSelector />
             </div>
-            <div className="flex items-center justify-between">
+            {/* <div className="flex items-center justify-between md:hidden">
               <span className="text-sm text-zinc-600 dark:text-zinc-400">Thème</span>
               <ThemeToggle />
-            </div>
+            </div> */}
             {/* <div className="space-y-2">
               <Link
                 href="/guide"
