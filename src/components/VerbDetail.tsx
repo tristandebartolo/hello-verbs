@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Verb } from "@/data/verbs";
 import type { Conjugation } from "@/lib/conjugation";
 import { SpeakButton } from "@/components/SpeakButton";
+import { SpeakableText } from "@/components/SpeakableText";
 import { VoiceSelector } from "@/components/VoiceSelector";
-import { useSpeech } from "@/hooks/useSpeech";
+import { useSpeechContext } from "@/contexts/SpeechContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { getTenseNameToSlug } from "@/data/tenses";
 
@@ -15,12 +16,77 @@ type VerbDetailProps = {
   conjugations: Conjugation[];
 };
 
+type ConjugationTableProps = {
+  conjugation: Conjugation;
+  fullConjugationText: string;
+};
+
+function ConjugationTable({ conjugation, fullConjugationText }: ConjugationTableProps) {
+  const { currentText } = useSpeechContext();
+
+  return (
+    <table className="w-full text-sm">
+      <tbody>
+        {conjugation.forms.map((form, formIndex) => {
+          const formText = `${form.pronoun} ${form.conjugation}`;
+          // Calcul de l'offset pour ce form dans fullConjugationText
+          const wordOffsetInFull = conjugation.forms
+            .slice(0, formIndex)
+            .reduce((acc, f) => {
+              const words = `${f.pronoun} ${f.conjugation}`.split(/\s+/).filter(w => w.length > 0);
+              return acc + words.length;
+            }, 0);
+          const pronounWordCount = form.pronoun.split(/\s+/).filter(w => w.length > 0).length;
+
+          // Détermine si on lit le texte complet ou une ligne individuelle
+          const isReadingFull = currentText === fullConjugationText;
+          const speakingText = isReadingFull ? fullConjugationText : formText;
+          const pronounOffset = isReadingFull ? wordOffsetInFull : 0;
+          const conjugationOffset = isReadingFull ? wordOffsetInFull + pronounWordCount : pronounWordCount;
+
+          return (
+            <tr key={form.pronoun}>
+              <td className="w-25 py-1 pr-4">
+                <SpeakableText
+                  text={form.pronoun}
+                  speakingText={speakingText}
+                  wordOffset={pronounOffset}
+                  className="text-zinc-400 dark:text-zinc-500"
+                />
+              </td>
+              <td className="py-1 font-medium text-zinc-900 dark:text-zinc-100">
+                <SpeakableText
+                  text={form.conjugation}
+                  speakingText={speakingText}
+                  wordOffset={conjugationOffset}
+                />
+              </td>
+              <td className="py-1 text-right">
+                <SpeakButton text={formText} />
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
 export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
-  const { speak, togglePause, stop, isSpeaking, isPaused } = useSpeech();
+  const { speak, togglePause, stop, isSpeaking, isPaused, currentText } = useSpeechContext();
   const { toggleFavorite, isFavorite } = useFavorites();
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
-  const fullVerbText = `${verb.infinitive}, ${verb.pastSimple}, ${verb.pastParticiple}`;
   const verbSlug = verb.infinitive;
+
+  // Texte des formes principales
+  const mainFormsText = `${verb.infinitive} ${verb.pastSimple} ${verb.pastParticiple}`;
+
+  // Reset currentPlayingId when speech ends or when another text is played
+  useEffect(() => {
+    if (!isSpeaking) {
+      setCurrentPlayingId(null);
+    }
+  }, [isSpeaking]);
 
   const handleSpeak = (text: string, id: string) => {
     setCurrentPlayingId(id);
@@ -32,8 +98,10 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
     stop();
   };
 
-  // Reset currentPlayingId when speech ends
-  const isCurrentPlaying = (id: string) => isSpeaking && currentPlayingId === id;
+  // Check if a specific section is playing (only for multi-word sections with controls)
+  const isCurrentPlaying = (id: string, expectedText: string) => {
+    return isSpeaking && currentPlayingId === id && currentText === expectedText;
+  };
 
   return (
     <div className="mx-auto max-w-4xl p-6 lg:px-8">
@@ -78,7 +146,7 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
           <p className="mt-2 text-xl text-zinc-600 dark:text-zinc-400">
             {verb.french}
           </p>
-              
+
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -125,7 +193,7 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
             </h2>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => handleSpeak(fullVerbText, "main-forms")}
+                onClick={() => handleSpeak(mainFormsText, "main-forms")}
                 className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
                 title="Écouter les 3 formes"
               >
@@ -145,7 +213,7 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
                   <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
                 </svg>
               </button>
-              {isCurrentPlaying("main-forms") && (
+              {isCurrentPlaying("main-forms", mainFormsText) && (
                 <>
                   <button
                     onClick={togglePause}
@@ -204,10 +272,9 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
                   Infinitif
                 </p>
                 <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                  {verb.infinitive}
+                  <SpeakableText text={verb.infinitive} speakingText={mainFormsText} />
                 </p>
               </div>
-              <SpeakButton text={verb.infinitive} />
             </div>
             <div className="flex items-center justify-between">
               <div>
@@ -215,10 +282,9 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
                   Prétérit
                 </p>
                 <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                  {verb.pastSimple}
+                  <SpeakableText text={verb.pastSimple} speakingText={mainFormsText} />
                 </p>
               </div>
-              <SpeakButton text={verb.pastSimple} />
             </div>
             <div className="flex items-center justify-between">
               <div>
@@ -226,10 +292,9 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
                   Participe passé
                 </p>
                 <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                  {verb.pastParticiple}
+                  <SpeakableText text={verb.pastParticiple} speakingText={mainFormsText} />
                 </p>
               </div>
-              <SpeakButton text={verb.pastParticiple} />
             </div>
           </div>
         </section>
@@ -239,125 +304,113 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
             Conjugaisons
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
-            {conjugations.map((conjugation) => (
-              <div
-                key={conjugation.tense}
-                className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
-              >
-                <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-3 dark:border-zinc-800">
-                  <div>
-                    <Link
-                      href={`/verb/${verbSlug}/exemples/${getTenseNameToSlug(conjugation.tense)}`}
-                      className="font-semibold text-zinc-900 hover:text-blue-600 dark:text-zinc-100 dark:hover:text-blue-400"
-                    >
-                      {conjugation.tense}
-                    </Link>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                      {conjugation.tenseFrench}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => {
-                        const fullText = conjugation.forms
-                          .map((f) => `${f.pronoun} ${f.conjugation}`)
-                          .join(". ");
-                        handleSpeak(fullText, conjugation.tense);
-                      }}
-                      className="flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-                      title={`Écouter toutes les conjugaisons du ${conjugation.tenseFrench}`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+            {conjugations.map((conjugation) => {
+              const fullConjugationText = conjugation.forms
+                .map((f) => `${f.pronoun} ${f.conjugation}`)
+                .join(". ");
+
+              return (
+                <div
+                  key={conjugation.tense}
+                  className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                  <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-3 dark:border-zinc-800">
+                    <div>
+                      <Link
+                        href={`/verb/${verbSlug}/exemples/${getTenseNameToSlug(conjugation.tense)}`}
+                        className="font-semibold text-zinc-900 hover:text-blue-600 dark:text-zinc-100 dark:hover:text-blue-400"
                       >
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                      </svg>
-                    </button>
-                    {isCurrentPlaying(conjugation.tense) && (
-                      <>
-                        <button
-                          onClick={togglePause}
-                          className="flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-                          title={isPaused ? "Reprendre" : "Pause"}
+                        {conjugation.tense}
+                      </Link>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {conjugation.tenseFrench}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          handleSpeak(fullConjugationText, conjugation.tense);
+                        }}
+                        className="flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                        title={`Écouter toutes les conjugaisons du ${conjugation.tenseFrench}`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         >
-                          {isPaused ? (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              stroke="none"
-                            >
-                              <polygon points="5 3 19 12 5 21 5 3" />
-                            </svg>
-                          ) : (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              stroke="none"
-                            >
-                              <rect x="6" y="4" width="4" height="16" />
-                              <rect x="14" y="4" width="4" height="16" />
-                            </svg>
-                          )}
-                        </button>
-                        <button
-                          onClick={handleStop}
-                          className="flex items-center justify-center rounded-lg border border-red-200 bg-red-50 p-1.5 text-red-600 transition-colors hover:bg-red-100 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
-                          title="Arrêter"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            stroke="none"
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                        </svg>
+                      </button>
+                      {isCurrentPlaying(conjugation.tense, fullConjugationText) && (
+                        <>
+                          <button
+                            onClick={togglePause}
+                            className="flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                            title={isPaused ? "Reprendre" : "Pause"}
                           >
-                            <rect x="4" y="4" width="16" height="16" rx="2" />
-                          </svg>
-                        </button>
-                      </>
-                    )}
+                            {isPaused ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                                stroke="none"
+                              >
+                                <polygon points="5 3 19 12 5 21 5 3" />
+                              </svg>
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                                stroke="none"
+                              >
+                                <rect x="6" y="4" width="4" height="16" />
+                                <rect x="14" y="4" width="4" height="16" />
+                              </svg>
+                            )}
+                          </button>
+                          <button
+                            onClick={handleStop}
+                            className="flex items-center justify-center rounded-lg border border-red-200 bg-red-50 p-1.5 text-red-600 transition-colors hover:bg-red-100 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+                            title="Arrêter"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              stroke="none"
+                            >
+                              <rect x="4" y="4" width="16" height="16" rx="2" />
+                            </svg>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <ConjugationTable
+                      conjugation={conjugation}
+                      fullConjugationText={fullConjugationText}
+                    />
                   </div>
                 </div>
-                <div className="p-4">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {conjugation.forms.map((form) => (
-                        <tr key={form.pronoun}>
-                          <td className="w-25 py-1 pr-4 text-zinc-500 dark:text-zinc-400">
-                            {form.pronoun}
-                          </td>
-                          <td className="py-1 font-medium text-zinc-900 dark:text-zinc-100">
-                            {form.conjugation}
-                          </td>
-                          <td className="py-1 text-right">
-                            <SpeakButton
-                              text={`${form.pronoun} ${form.conjugation}`}
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>

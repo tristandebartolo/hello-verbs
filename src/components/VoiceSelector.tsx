@@ -1,9 +1,9 @@
 "use client";
 
-import { useSpeech, type VoiceGender } from "@/hooks/useSpeech";
+import { useSpeechContext, type VoiceGender } from "@/contexts/SpeechContext";
 
 export function VoiceSelector() {
-  const { voiceGender, setVoiceGender, speak } = useSpeech();
+  const { voiceGender, setVoiceGender, speak } = useSpeechContext();
 
   const handleChange = (gender: VoiceGender) => {
     setVoiceGender(gender);

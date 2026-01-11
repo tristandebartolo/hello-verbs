@@ -1,13 +1,14 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Verb } from "@/data/verbs";
 import type { TenseData } from "@/data/tenses";
 import type { Conjugation } from "@/lib/conjugation";
 import { SpeakButton } from "@/components/SpeakButton";
+import { SpeakableText } from "@/components/SpeakableText";
 import { VoiceSelector } from "@/components/VoiceSelector";
-import { useSpeech } from "@/hooks/useSpeech";
-import { useState } from "react";
+import { useSpeechContext } from "@/contexts/SpeechContext";
 
 type TenseExamplesProps = {
   verb: Verb;
@@ -15,13 +16,84 @@ type TenseExamplesProps = {
   conjugation: Conjugation;
 };
 
+type ConjugationTableProps = {
+  conjugation: Conjugation;
+  fullConjugationText: string;
+};
+
+function ConjugationTable({ conjugation, fullConjugationText }: ConjugationTableProps) {
+  const { currentText } = useSpeechContext();
+
+  return (
+    <table className="w-full text-sm">
+      <tbody>
+        {conjugation.forms.map((form, formIndex) => {
+          const formText = `${form.pronoun} ${form.conjugation}`;
+          // Calcul de l'offset pour ce form dans fullConjugationText
+          const wordOffsetInFull = conjugation.forms
+            .slice(0, formIndex)
+            .reduce((acc, f) => {
+              const words = `${f.pronoun} ${f.conjugation}`.split(/\s+/).filter(w => w.length > 0);
+              return acc + words.length;
+            }, 0);
+          const pronounWordCount = form.pronoun.split(/\s+/).filter(w => w.length > 0).length;
+
+          // Détermine si on lit le texte complet ou une ligne individuelle
+          const isReadingFull = currentText === fullConjugationText;
+          const speakingText = isReadingFull ? fullConjugationText : formText;
+          const pronounOffset = isReadingFull ? wordOffsetInFull : 0;
+          const conjugationOffset = isReadingFull ? wordOffsetInFull + pronounWordCount : pronounWordCount;
+
+          return (
+            <tr
+              key={form.pronoun}
+              className="border-b border-zinc-100 last:border-0 dark:border-zinc-800"
+            >
+              <td className="w-28 py-2 pr-4">
+                <SpeakableText
+                  text={form.pronoun}
+                  speakingText={speakingText}
+                  wordOffset={pronounOffset}
+                  className="text-zinc-400 dark:text-zinc-500"
+                />
+              </td>
+              <td className="py-2 font-medium text-zinc-900 dark:text-zinc-100">
+                <SpeakableText
+                  text={form.conjugation}
+                  speakingText={speakingText}
+                  wordOffset={conjugationOffset}
+                />
+              </td>
+              <td className="py-2 text-right">
+                <SpeakButton text={formText} />
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
 export function TenseExamples({
   verb,
   tense,
   conjugation,
 }: TenseExamplesProps) {
-  const { speak, togglePause, stop, isSpeaking, isPaused } = useSpeech();
+  const { speak, togglePause, stop, isSpeaking, isPaused, currentText } = useSpeechContext();
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
+
+  // Texte complet des conjugaisons
+  const fullConjugationText = conjugation.forms
+    .map((f) => `${f.pronoun} ${f.conjugation}`)
+    .join(". ");
+
+  // Reset currentPlayingId when speech ends
+  useEffect(() => {
+    if (!isSpeaking) {
+      setCurrentPlayingId(null);
+    }
+  }, [isSpeaking]);
 
   const handleSpeak = (text: string, id: string) => {
     setCurrentPlayingId(id);
@@ -33,7 +105,10 @@ export function TenseExamples({
     stop();
   };
 
-  const isCurrentPlaying = (id: string) => isSpeaking && currentPlayingId === id;
+  // Check if a specific section is playing
+  const isCurrentPlaying = (id: string, expectedText: string) => {
+    return isSpeaking && currentPlayingId === id && currentText === expectedText;
+  };
 
   return (
     <div className="mx-auto max-w-4xl p-6 lg:px-8">
@@ -87,12 +162,7 @@ export function TenseExamples({
           </h2>
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => {
-                const fullText = conjugation.forms
-                  .map((f) => `${f.pronoun} ${f.conjugation}`)
-                  .join(". ");
-                handleSpeak(fullText, conjugation.tense);
-              }}
+              onClick={() => handleSpeak(fullConjugationText, "conjugation")}
               className="flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
               title={`Écouter toutes les conjugaisons du ${conjugation.tenseFrench}`}
             >
@@ -112,7 +182,7 @@ export function TenseExamples({
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
               </svg>
             </button>
-            {isCurrentPlaying(conjugation.tense) && (
+            {isCurrentPlaying("conjugation", fullConjugationText) && (
               <>
                 <button
                   onClick={togglePause}
@@ -165,26 +235,10 @@ export function TenseExamples({
           </div>
         </div>
 
-        <table className="w-full text-sm">
-          <tbody>
-            {conjugation.forms.map((form) => (
-              <tr
-                key={form.pronoun}
-                className="border-b border-zinc-100 last:border-0 dark:border-zinc-800"
-              >
-                <td className="w-28 py-2 pr-4 text-zinc-500 dark:text-zinc-400">
-                  {form.pronoun}
-                </td>
-                <td className="py-2 font-medium text-zinc-900 dark:text-zinc-100">
-                  {form.conjugation}
-                </td>
-                <td className="py-2 text-right">
-                  <SpeakButton text={`${form.pronoun} ${form.conjugation}`} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ConjugationTable
+          conjugation={conjugation}
+          fullConjugationText={fullConjugationText}
+        />
       </section>
 
       <section className="mb-10 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
@@ -240,7 +294,7 @@ export function TenseExamples({
               <div className="rounded-md bg-zinc-50 p-4 dark:bg-zinc-800">
                 <div className="flex items-center justify-between">
                   <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                    {item.example}
+                    <SpeakableText text={item.example} />
                   </p>
                   <SpeakButton text={item.example} size="md" />
                 </div>

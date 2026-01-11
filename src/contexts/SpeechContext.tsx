@@ -1,9 +1,25 @@
 "use client";
 
-import { useCallback, useState, useEffect, useRef } from "react";
+import { createContext, useContext, useCallback, useState, useEffect, useRef, type ReactNode } from "react";
 import { usePersistedState } from "@/hooks/usePersistedState";
 
 export type VoiceGender = "female" | "male";
+
+type SpeechContextType = {
+  speak: (text: string, lang?: string, genderOverride?: VoiceGender) => void;
+  stop: () => void;
+  pause: () => void;
+  resume: () => void;
+  togglePause: () => void;
+  isSpeaking: boolean;
+  isPaused: boolean;
+  voiceGender: VoiceGender;
+  setVoiceGender: (gender: VoiceGender) => void;
+  currentWordIndex: number;
+  currentText: string;
+};
+
+const SpeechContext = createContext<SpeechContextType | null>(null);
 
 function getVoiceByGender(
   gender: VoiceGender,
@@ -14,53 +30,25 @@ function getVoiceByGender(
 
   if (langVoices.length === 0) return null;
 
-  // Common female voice name patterns
   const femalePatterns = [
-    "female",
-    "samantha",
-    "victoria",
-    "karen",
-    "moira",
-    "tessa",
-    "fiona",
-    "kate",
-    "serena",
-    "susan",
-    "zira",
-    "hazel",
-    "heather",
-    "ava",
+    "female", "samantha", "victoria", "karen", "moira", "tessa",
+    "fiona", "kate", "serena", "susan", "zira", "hazel", "heather", "ava",
   ];
 
-  // Common male voice name patterns
   const malePatterns = [
-    "male",
-    "daniel",
-    "david",
-    "james",
-    "tom",
-    "oliver",
-    "george",
-    "fred",
-    "alex",
-    "lee",
-    "rishi",
-    "aaron",
+    "male", "daniel", "david", "james", "tom", "oliver",
+    "george", "fred", "alex", "lee", "rishi", "aaron",
   ];
 
   const patterns = gender === "female" ? femalePatterns : malePatterns;
-  const nameLower = (name: string) => name.toLowerCase();
 
-  // Try to find a voice matching the gender
   for (const voice of langVoices) {
-    const voiceName = nameLower(voice.name);
+    const voiceName = voice.name.toLowerCase();
     if (patterns.some((p) => voiceName.includes(p))) {
       return voice;
     }
   }
 
-  // Fallback: return first or second voice based on gender
-  // Many systems list female voices first
   if (gender === "female") {
     return langVoices[0];
   } else {
@@ -68,7 +56,7 @@ function getVoiceByGender(
   }
 }
 
-export function useSpeech() {
+export function SpeechProvider({ children }: { children: ReactNode }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(-1);
@@ -78,8 +66,6 @@ export function useSpeech() {
     "female"
   );
   const [voicesLoaded, setVoicesLoaded] = useState(false);
-  const wordsRef = useRef<string[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const wordTimersRef = useRef<NodeJS.Timeout[]>([]);
 
   useEffect(() => {
@@ -100,12 +86,8 @@ export function useSpeech() {
     };
   }, []);
 
-  // Clean up timers on unmount
   useEffect(() => {
     return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
       wordTimersRef.current.forEach((timer) => clearTimeout(timer));
     };
   }, []);
@@ -113,10 +95,6 @@ export function useSpeech() {
   const clearWordTimers = useCallback(() => {
     wordTimersRef.current.forEach((timer) => clearTimeout(timer));
     wordTimersRef.current = [];
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
   }, []);
 
   const speak = useCallback(
@@ -131,9 +109,7 @@ export function useSpeech() {
       setCurrentText(text);
       setCurrentWordIndex(-1);
 
-      // Parse words for highlighting (split by spaces, keeping punctuation with words)
       const words = text.split(/\s+/).filter((w) => w.length > 0);
-      wordsRef.current = words;
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
@@ -146,19 +122,15 @@ export function useSpeech() {
         }
       }
 
-      // Track if boundary events are supported
       let boundarySupported = false;
 
       utterance.onstart = () => {
         setIsSpeaking(true);
         setCurrentWordIndex(0);
 
-        // Set up fallback timer-based word highlighting
-        // Average speaking rate: ~150 words per minute at rate 1.0
-        // At rate 0.9, it's ~135 words per minute = ~444ms per word
-        const msPerWord = 444 / 0.9; // Adjust for rate
+        // Fallback timer-based highlighting
+        const msPerWord = 400;
 
-        // Schedule word highlights as fallback (will be overridden by boundary events if supported)
         words.forEach((_, index) => {
           const timer = setTimeout(() => {
             if (!boundarySupported) {
@@ -169,22 +141,16 @@ export function useSpeech() {
         });
       };
 
-      // Use boundary event to track word being spoken (more accurate when supported)
       utterance.onboundary = (event) => {
         if (event.name === "word") {
           boundarySupported = true;
-          // Clear fallback timers since boundary events work
-          if (wordTimersRef.current.length > 0) {
-            clearWordTimers();
-          }
+          clearWordTimers();
 
-          // Find word index based on character index
           const charIndex = event.charIndex;
           let currentIdx = 0;
           let wordIdx = 0;
 
           for (let i = 0; i < words.length; i++) {
-            // Find position of this word in the text
             const wordPos = text.indexOf(words[i], currentIdx);
             if (wordPos !== -1 && charIndex >= wordPos && charIndex < wordPos + words[i].length + 1) {
               wordIdx = i;
@@ -258,20 +224,31 @@ export function useSpeech() {
     }
   }, [clearWordTimers]);
 
-  const getWords = useCallback(() => wordsRef.current, []);
+  return (
+    <SpeechContext.Provider
+      value={{
+        speak,
+        stop,
+        pause,
+        resume,
+        togglePause,
+        isSpeaking,
+        isPaused,
+        voiceGender,
+        setVoiceGender,
+        currentWordIndex,
+        currentText,
+      }}
+    >
+      {children}
+    </SpeechContext.Provider>
+  );
+}
 
-  return {
-    speak,
-    stop,
-    pause,
-    resume,
-    togglePause,
-    isSpeaking,
-    isPaused,
-    voiceGender,
-    setVoiceGender,
-    currentWordIndex,
-    currentText,
-    getWords,
-  };
+export function useSpeechContext() {
+  const context = useContext(SpeechContext);
+  if (!context) {
+    throw new Error("useSpeechContext must be used within a SpeechProvider");
+  }
+  return context;
 }

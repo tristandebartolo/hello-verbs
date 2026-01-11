@@ -1,6 +1,6 @@
 "use client";
 
-import { useSpeech } from "@/hooks/useSpeech";
+import { useSpeechContext } from "@/contexts/SpeechContext";
 
 type SpeakButtonProps = {
   text: string;
@@ -9,7 +9,7 @@ type SpeakButtonProps = {
 };
 
 export function SpeakButton({ text, lang = "en-US", size = "sm" }: SpeakButtonProps) {
-  const { speak } = useSpeech();
+  const { speak } = useSpeechContext();
 
   const iconSize = size === "sm" ? 14 : 18;
   const padding = size === "sm" ? "p-1" : "p-1.5";
