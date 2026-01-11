@@ -7,21 +7,27 @@ type VerbCardProps = {
   verb: Verb;
   isFavorite: boolean;
   onToggleFavorite: (infinitive: string) => void;
+  tiny?: boolean;
 };
 
-export function VerbCard({ verb, isFavorite, onToggleFavorite }: VerbCardProps) {
+export function VerbCard({
+  verb,
+  isFavorite,
+  onToggleFavorite,
+  tiny = false,
+}: VerbCardProps) {
   return (
     <div className="relative">
       <Link
         href={`/verb/${verb.infinitive}`}
-        className="block rounded-lg border border-zinc-200 bg-white p-4 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+        className={`block rounded-lg border border-zinc-200 bg-white ${tiny ? 'p-4' : 'py-2 px-4'} shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700`}
       >
-        <div className="flex items-start justify-between gap-2">
+        <div className={`flex ${tiny ? 'items-start' : 'items-center'} justify-between gap-2`}>
           <div>
-            <h3 className="capitalize text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className={`capitalize ${tiny ? 'text-lg' : 'text-sm'} font-semibold text-zinc-900 dark:text-zinc-100`}>
               {verb.infinitive}
             </h3>
-            <p className="capitalize text-sm text-zinc-500 dark:text-zinc-400">
+            <p className={`capitalize ${tiny ? 'text-sm' : 'text-xs'} text-zinc-500 dark:text-zinc-400`}>
               {verb.french}
             </p>
           </div>
@@ -35,47 +41,54 @@ export function VerbCard({ verb, isFavorite, onToggleFavorite }: VerbCardProps) 
             {verb.isIrregular ? "irrégulier" : "régulier"}
           </span>
         </div>
-        <div className="mt-2 flex items-center justify-between">
-          <span className="text-xs text-zinc-400 dark:text-zinc-500">
-            {verb.pastSimple} / {verb.pastParticiple}
-          </span>
-        </div>
-      </Link>
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          onToggleFavorite(verb.infinitive);
-        }}
-        className="absolute bottom-3 right-3 p-1 text-zinc-400 transition-colors hover:text-amber-500 dark:text-zinc-500 dark:hover:text-amber-400"
-        aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-      >
-        {isFavorite ? (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="text-amber-500 dark:text-amber-400"
-          >
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-          </svg>
-        ) : (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-          </svg>
+        {tiny && (
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-xs text-zinc-400 dark:text-zinc-500">
+              {verb.pastSimple} / {verb.pastParticiple}
+            </span>
+          </div>
         )}
-      </button>
+      </Link>
+
+      {tiny && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onToggleFavorite(verb.infinitive);
+          }}
+          className="absolute bottom-3 right-3 p-1 text-zinc-400 transition-colors hover:text-amber-500 dark:text-zinc-500 dark:hover:text-amber-400"
+          aria-label={
+            isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
+          }
+        >
+          {isFavorite ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="text-amber-500 dark:text-amber-400"
+            >
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+          )}
+        </button>
+      )}
     </div>
   );
 }

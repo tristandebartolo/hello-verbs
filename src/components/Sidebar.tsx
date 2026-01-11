@@ -4,7 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { tenses } from "@/data/tenses";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { verbs, type Verb } from "@/data/verbs";
 import { VoiceSelector } from "@/components/VoiceSelector";
+import {
+  LearningCategory,
+  useFavoriteCategories,
+} from "@/hooks/useFavoriteCategories";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useMemo } from "react";
+import { KanbanCard } from "./KanbanCard";
+import { VerbCard } from "./VerbCard";
 
 type SidebarProps = {
   isOpen: boolean;
@@ -13,10 +22,16 @@ type SidebarProps = {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const { getVerbsByCategory } = useFavoriteCategories();
+
+  const verbsByCategory = useMemo(() => {
+    return getVerbsByCategory(favorites);
+  }, [favorites, getVerbsByCategory]);
 
   const menuItems = [
     { href: "/", label: "Verbes", icon: "book" },
-    { href: "/favoris", label: "Favoris", icon: "star" },
+    { href: "/apprentissage", label: "Apprentissage", icon: "star" },
   ];
 
   const isActive = (href: string) => {
@@ -24,6 +39,20 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     return pathname.startsWith(href);
   };
 
+  const verbsMap = useMemo(() => {
+    const map = new Map<string, Verb>();
+    verbs.forEach((v) => map.set(v.infinitive, v));
+    return map;
+  }, []);
+
+  const getVerbsForCategory = (category: LearningCategory): Verb[] => {
+    return verbsByCategory[category]
+      .map((infinitive) => verbsMap.get(infinitive))
+      .filter((v): v is Verb => v !== undefined)
+      .sort((a, b) => a.infinitive.localeCompare(b.infinitive));
+  };
+
+  const currentLearning = getVerbsForCategory("learning");
   // Extract verb slug from URL if on a verb page
   // Matches /verb/[slug] or /verb/[slug]/exemples/[tense]
   const verbMatch = pathname.match(/^\/verb\/([^/]+)/);
@@ -83,7 +112,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-1">
+            <div className="space-y-1 mb-6">
               {menuItems.map((item) => (
                 <Link
                   key={item.href}
@@ -133,7 +162,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             {/* Tenses section - only shown on verb pages */}
             {currentVerb && (
-              <div className="mt-6">
+              <div className="mb-6">
                 <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Temps ({currentVerb})
                 </h3>
@@ -165,13 +194,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <span className="capitalize truncate">{currentVerb}</span>
                   </Link>
                   {tenses.map((tense) => (
-                    
                     <Link
                       key={tense.slug}
                       href={`/verb/${currentVerb}/exemples/${tense.slug}`}
                       onClick={onClose}
                       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                        isTenseActive(`/verb/${currentVerb}/exemples/${tense.slug}`)
+                        isTenseActive(
+                          `/verb/${currentVerb}/exemples/${tense.slug}`
+                        )
                           ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
                           : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                       }`}
@@ -193,6 +223,28 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       <span className="truncate">{tense.nameFrench}</span>
                     </Link>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {currentLearning && currentLearning.length > 0 && (
+              <div className="space-y-1">
+                <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  En cours
+                </h3>
+
+                <div className="h-100 overflow-y-auto flex flex-col gap-2">
+                  {currentLearning
+                    .reverse() // inverse l'ordre
+                    .slice(0, 6) // ← limite à 6 éléments
+                    .map((verb, i) => (
+                      <VerbCard
+                        key={verb.infinitive}
+                        verb={verb}
+                        isFavorite={isFavorite(verb.infinitive)}
+                        onToggleFavorite={toggleFavorite}
+                      />
+                    ))}
                 </div>
               </div>
             )}

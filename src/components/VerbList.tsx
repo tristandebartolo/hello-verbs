@@ -185,6 +185,7 @@ export function VerbList() {
                       verb={verb}
                       isFavorite={isFavorite(verb.infinitive)}
                       onToggleFavorite={toggleFavorite}
+                      tiny={true}
                     />
                   ))}
                 </div>
@@ -200,6 +201,7 @@ export function VerbList() {
               verb={verb}
               isFavorite={isFavorite(verb.infinitive)}
               onToggleFavorite={toggleFavorite}
+              tiny={true}
             />
           ))}
         </div>
