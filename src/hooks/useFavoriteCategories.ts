@@ -51,21 +51,21 @@ export const categoryConfig: Record<
   },
   learning: {
     label: "En cours",
-    color: "text-amber-600 dark:text-amber-400",
-    bgColor: "bg-amber-50 dark:bg-amber-900/20",
-    borderColor: "border-amber-300 dark:border-amber-600",
+    color: "text-fuchsia-600 dark:text-fuchsia-400",
+    bgColor: "bg-fuchsia-50 dark:bg-fuchsia-900/20",
+    borderColor: "border-fuchsia-300 dark:border-fuchsia-600",
   },
   next: {
     label: "Prochain",
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-    borderColor: "border-blue-300 dark:border-blue-600",
+    color: "text-rose-600 dark:text-rose-400",
+    bgColor: "bg-rose-50 dark:bg-rose-900/20",
+    borderColor: "border-rose-300 dark:border-rose-600",
   },
   done: {
     label: "Validés",
-    color: "text-emerald-600 dark:text-emerald-400",
-    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-    borderColor: "border-emerald-300 dark:border-emerald-600",
+    color: "text-sky-600 dark:text-sky-400",
+    bgColor: "bg-sky-50 dark:bg-sky-900/20",
+    borderColor: "border-sky-300 dark:border-sky-600",
   },
 };
 

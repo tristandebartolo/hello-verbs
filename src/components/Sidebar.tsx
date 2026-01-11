@@ -235,7 +235,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
                 <div className="h-100 overflow-y-auto flex flex-col gap-2">
                   {currentLearning
-                    .reverse() // inverse l'ordre
+                    // .reverse() // inverse l'ordre
                     .slice(0, 6) // ← limite à 6 éléments
                     .map((verb, i) => (
                       <VerbCard

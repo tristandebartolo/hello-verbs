@@ -74,10 +74,10 @@ export function KanbanCard({ verb }: KanbanCardProps) {
             if (isDragging) e.preventDefault();
           }}
         >
-          <div className="font-medium text-zinc-900 dark:text-zinc-100">
+          <div className="capitalize font-medium text-zinc-900 dark:text-zinc-100">
             {verb.infinitive}
           </div>
-          <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="capitalize mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             {verb.french}
           </div>
         </Link>
@@ -111,10 +111,10 @@ export function KanbanCard({ verb }: KanbanCardProps) {
 
       <div className="mt-2 flex items-center gap-2">
         <span
-          className={`inline-flex rounded px-1.5 py-0.5 text-xs font-medium ${
+          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium  ${
             verb.isIrregular
-              ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"
-              : "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400"
+              ? "bg-rose-100 text-amber-700 dark:bg-amber-900 dark:text-amber-400"
+              : "bg-sky-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-400"
           }`}
         >
           {verb.isIrregular ? "Irrégulier" : "Régulier"}
