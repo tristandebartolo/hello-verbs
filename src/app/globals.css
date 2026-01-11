@@ -24,3 +24,10 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Sur tous les éléments qui servent d'ancre */
+[id^="letter-"],
+[id^="alpha-nav"] {
+  scroll-margin-top: 80px;
+}
+
