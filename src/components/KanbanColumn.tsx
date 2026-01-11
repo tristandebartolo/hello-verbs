@@ -88,7 +88,7 @@ export function KanbanColumn({ category, verbs }: KanbanColumnProps) {
   return (
     <div
       ref={columnRef}
-      className={`flex min-w-70 flex-1 flex-col rounded-xl border-2 transition-colors ${
+      className={`flex min-w-50 flex-1 flex-col rounded-xl border-2 transition-colors ${
         isDragOver
           ? `${config.borderColor} ${config.bgColor}`
           : "border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900"
@@ -100,7 +100,7 @@ export function KanbanColumn({ category, verbs }: KanbanColumnProps) {
       {/* Header */}
       <div className={`rounded-t-lg border-b-2 ${config.borderColor} ${config.bgColor} px-4 py-3`}>
         <div className="flex items-center justify-between">
-          <h2 className={`font-semibold ${config.color}`}>{config.label}</h2>
+          <h2 className={`text-xs font-semibold ${config.color}`}>{config.label}</h2>
           <span
             className={`flex h-6 min-w-6 items-center justify-center rounded-full px-2 text-xs font-medium ${config.bgColor} ${config.color}`}
           >
