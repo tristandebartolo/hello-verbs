@@ -132,7 +132,7 @@ export function TenseExamples({
           </svg>
           Retour à {verb.infinitive}
         </Link>
-        <VoiceSelector />
+        {/* <VoiceSelector /> */}
       </div>
 
       <header className="mb-10">

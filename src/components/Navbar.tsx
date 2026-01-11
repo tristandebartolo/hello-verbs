@@ -46,9 +46,9 @@ export function Navbar({ onMenuClick }: NavbarProps) {
 
         {/* Right side: Voice selector + Theme toggle */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:block">
+          {/* <div className="hidden sm:block">
             <VoiceSelector />
-          </div>
+          </div> */}
           <ThemeToggle />
         </div>
       </div>

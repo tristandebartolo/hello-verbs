@@ -169,15 +169,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Footer */}
           <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-2 flex items-center justify-between">
               <span className="text-sm text-zinc-600 dark:text-zinc-400">Voix</span>
              <VoiceSelector />
             </div>
-            <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center justify-between">
               <span className="text-sm text-zinc-600 dark:text-zinc-400">Thème</span>
               <ThemeToggle />
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Link
                 href="/guide"
                 onClick={onClose}
@@ -249,7 +249,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </svg>
                 Gérer les cookies
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </aside>

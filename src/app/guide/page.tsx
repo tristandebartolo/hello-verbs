@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function GuidePage() {
   return (
-    <div className="mx-auto max-w-3xl p-6 lg:px-8">
+    <div className="mx-auto max-w-4xl p-6 lg:px-8">
       <header className="mb-10">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 sm:text-4xl">
           Guide d&apos;utilisation

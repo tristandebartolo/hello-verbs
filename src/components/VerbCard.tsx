@@ -18,10 +18,10 @@ export function VerbCard({ verb, isFavorite, onToggleFavorite }: VerbCardProps) 
       >
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className="capitalize text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               {verb.infinitive}
             </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="capitalize text-sm text-zinc-500 dark:text-zinc-400">
               {verb.french}
             </p>
           </div>

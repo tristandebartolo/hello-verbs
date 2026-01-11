@@ -13,11 +13,11 @@ export function VoiceSelector() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-zinc-600 dark:text-zinc-400">Voix :</span>
+      {/* <span className="text-sm text-zinc-600 dark:text-zinc-400">Voix :</span> */}
       <div className="flex rounded-lg border border-zinc-200 dark:border-zinc-700">
         <button
           onClick={() => handleChange("female")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
+          className={`flex items-center gap-1.5 p-2 text-sm transition-colors ${
             voiceGender === "female"
               ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
               : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
@@ -27,8 +27,8 @@ export function VoiceSelector() {
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -43,7 +43,7 @@ export function VoiceSelector() {
         </button>
         <button
           onClick={() => handleChange("male")}
-          className={`flex items-center gap-1.5 border-l border-zinc-200 px-3 py-1.5 text-sm transition-colors dark:border-zinc-700 ${
+          className={`flex items-center gap-1.5 border-l border-zinc-200 p-2 text-sm transition-colors dark:border-zinc-700 ${
             voiceGender === "male"
               ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
               : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
@@ -53,8 +53,8 @@ export function VoiceSelector() {
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

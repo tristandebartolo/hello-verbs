@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
 import { CookieConsent } from "@/components/CookieConsent";
+import { NavbarFooter } from "@/components/NavbarFooter";
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <main className="min-h-screen md:pl-72">
         <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
         {children}
+        <NavbarFooter />
       </main>
       <CookieConsent />
     </div>
