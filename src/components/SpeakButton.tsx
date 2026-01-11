@@ -6,9 +6,10 @@ type SpeakButtonProps = {
   text: string;
   lang?: string;
   size?: "sm" | "md";
+  speakingId?: string;
 };
 
-export function SpeakButton({ text, lang = "en-US", size = "sm" }: SpeakButtonProps) {
+export function SpeakButton({ text, lang = "en-US", size = "sm", speakingId }: SpeakButtonProps) {
   const { speak } = useSpeechContext();
 
   const iconSize = size === "sm" ? 14 : 18;
@@ -16,7 +17,7 @@ export function SpeakButton({ text, lang = "en-US", size = "sm" }: SpeakButtonPr
 
   return (
     <button
-      onClick={() => speak(text, lang)}
+      onClick={() => speak(text, lang, undefined, speakingId)}
       className={`${padding} rounded text-zinc-400 transition-colors hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300`}
       aria-label={`Écouter "${text}"`}
       title={`Écouter "${text}"`}

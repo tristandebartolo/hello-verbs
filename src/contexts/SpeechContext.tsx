@@ -6,7 +6,7 @@ import { usePersistedState } from "@/hooks/usePersistedState";
 export type VoiceGender = "female" | "male";
 
 type SpeechContextType = {
-  speak: (text: string, lang?: string, genderOverride?: VoiceGender) => void;
+  speak: (text: string, lang?: string, genderOverride?: VoiceGender, speakingId?: string) => void;
   stop: () => void;
   pause: () => void;
   resume: () => void;
@@ -17,6 +17,7 @@ type SpeechContextType = {
   setVoiceGender: (gender: VoiceGender) => void;
   currentWordIndex: number;
   currentText: string;
+  currentSpeakingId: string;
 };
 
 const SpeechContext = createContext<SpeechContextType | null>(null);
@@ -61,6 +62,7 @@ export function SpeechProvider({ children }: { children: ReactNode }) {
   const [isPaused, setIsPaused] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(-1);
   const [currentText, setCurrentText] = useState<string>("");
+  const [currentSpeakingId, setCurrentSpeakingId] = useState<string>("");
   const [voiceGender, setVoiceGender] = usePersistedState<VoiceGender>(
     "speech-voice-gender",
     "female"
@@ -98,7 +100,7 @@ export function SpeechProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const speak = useCallback(
-    (text: string, lang: string = "en-US", genderOverride?: VoiceGender) => {
+    (text: string, lang: string = "en-US", genderOverride?: VoiceGender, speakingId?: string) => {
       if (typeof window === "undefined" || !window.speechSynthesis) {
         return;
       }
@@ -107,6 +109,7 @@ export function SpeechProvider({ children }: { children: ReactNode }) {
       clearWordTimers();
       setIsPaused(false);
       setCurrentText(text);
+      setCurrentSpeakingId(speakingId || "");
       setCurrentWordIndex(-1);
 
       const words = text.split(/\s+/).filter((w) => w.length > 0);
@@ -175,6 +178,7 @@ export function SpeechProvider({ children }: { children: ReactNode }) {
         setIsPaused(false);
         setCurrentWordIndex(-1);
         setCurrentText("");
+        setCurrentSpeakingId("");
         clearWordTimers();
       };
 
@@ -183,6 +187,7 @@ export function SpeechProvider({ children }: { children: ReactNode }) {
         setIsPaused(false);
         setCurrentWordIndex(-1);
         setCurrentText("");
+        setCurrentSpeakingId("");
         clearWordTimers();
       };
 
@@ -220,6 +225,7 @@ export function SpeechProvider({ children }: { children: ReactNode }) {
       setIsPaused(false);
       setCurrentWordIndex(-1);
       setCurrentText("");
+      setCurrentSpeakingId("");
       clearWordTimers();
     }
   }, [clearWordTimers]);
@@ -238,6 +244,7 @@ export function SpeechProvider({ children }: { children: ReactNode }) {
         setVoiceGender,
         currentWordIndex,
         currentText,
+        currentSpeakingId,
       }}
     >
       {children}

@@ -78,9 +78,6 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
   const verbSlug = verb.infinitive;
 
-  // Texte des formes principales
-  const mainFormsText = `${verb.infinitive} ${verb.pastSimple} ${verb.pastParticiple}`;
-
   // Reset currentPlayingId when speech ends or when another text is played
   useEffect(() => {
     if (!isSpeaking) {
@@ -187,84 +184,9 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
         </header>
 
         <section className="mb-10 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Formes principales
-            </h2>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleSpeak(mainFormsText, "main-forms")}
-                className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-                title="Écouter les 3 formes"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                </svg>
-              </button>
-              {isCurrentPlaying("main-forms", mainFormsText) && (
-                <>
-                  <button
-                    onClick={togglePause}
-                    className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-                    title={isPaused ? "Reprendre" : "Pause"}
-                  >
-                    {isPaused ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        stroke="none"
-                      >
-                        <polygon points="5 3 19 12 5 21 5 3" />
-                      </svg>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        stroke="none"
-                      >
-                        <rect x="6" y="4" width="4" height="16" />
-                        <rect x="14" y="4" width="4" height="16" />
-                      </svg>
-                    )}
-                  </button>
-                  <button
-                    onClick={handleStop}
-                    className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm text-red-600 transition-colors hover:bg-red-100 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
-                    title="Arrêter"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      stroke="none"
-                    >
-                      <rect x="4" y="4" width="16" height="16" rx="2" />
-                    </svg>
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            Formes principales
+          </h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="flex items-center justify-between">
               <div>
@@ -272,9 +194,10 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
                   Infinitif
                 </p>
                 <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                  <SpeakableText text={verb.infinitive} speakingText={mainFormsText} />
+                  <SpeakableText text={verb.infinitive} speakingText={verb.infinitive} speakingId="infinitive" />
                 </p>
               </div>
+              <SpeakButton text={verb.infinitive} speakingId="infinitive" />
             </div>
             <div className="flex items-center justify-between">
               <div>
@@ -282,9 +205,10 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
                   Prétérit
                 </p>
                 <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                  <SpeakableText text={verb.pastSimple} speakingText={mainFormsText} />
+                  <SpeakableText text={verb.pastSimple} speakingText={verb.pastSimple} speakingId="pastSimple" />
                 </p>
               </div>
+              <SpeakButton text={verb.pastSimple} speakingId="pastSimple" />
             </div>
             <div className="flex items-center justify-between">
               <div>
@@ -292,9 +216,10 @@ export function VerbDetail({ verb, conjugations }: VerbDetailProps) {
                   Participe passé
                 </p>
                 <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                  <SpeakableText text={verb.pastParticiple} speakingText={mainFormsText} />
+                  <SpeakableText text={verb.pastParticiple} speakingText={verb.pastParticiple} speakingId="pastParticiple" />
                 </p>
               </div>
+              <SpeakButton text={verb.pastParticiple} speakingId="pastParticiple" />
             </div>
           </div>
         </section>

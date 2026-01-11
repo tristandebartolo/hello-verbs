@@ -7,6 +7,8 @@ type SpeakableTextProps = {
   text: string;
   /** Le texte complet qui sera prononcé quand on clique sur le bouton associé */
   speakingText?: string;
+  /** Identifiant unique pour distinguer les textes identiques */
+  speakingId?: string;
   /** L'offset en nombre de mots dans speakingText où commence ce texte */
   wordOffset?: number;
   className?: string;
@@ -16,23 +18,32 @@ type SpeakableTextProps = {
 export function SpeakableText({
   text,
   speakingText,
+  speakingId,
   wordOffset = 0,
   className = "",
   highlightClassName = "bg-amber-300 dark:bg-amber-500/50 rounded px-0.5 -mx-0.5",
 }: SpeakableTextProps) {
-  const { isSpeaking, currentWordIndex, currentText } = useSpeechContext();
+  const { isSpeaking, currentWordIndex, currentText, currentSpeakingId } = useSpeechContext();
 
   // Le texte de référence pour la comparaison
   const referenceText = speakingText || text;
 
   // Vérifie si ce composant doit être surligné
   // Le currentText doit correspondre exactement au speakingText passé
+  // Si speakingId est fourni, on vérifie aussi que l'ID correspond
   const shouldHighlight = useMemo(() => {
     if (!isSpeaking || !currentText) return false;
 
-    // Correspondance exacte uniquement
-    return currentText === referenceText;
-  }, [isSpeaking, currentText, referenceText]);
+    // Correspondance du texte
+    const textMatches = currentText === referenceText;
+
+    // Si un speakingId est fourni, on vérifie aussi l'ID
+    if (speakingId) {
+      return textMatches && currentSpeakingId === speakingId;
+    }
+
+    return textMatches;
+  }, [isSpeaking, currentText, referenceText, speakingId, currentSpeakingId]);
 
   // Split text into words and spaces for multi-word highlighting
   const parts = useMemo(() => {
