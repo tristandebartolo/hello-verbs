@@ -31,7 +31,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // Check if current tense is active
   const isTenseActive = (tenseSlug: string) => {
-    return pathname.includes(`/exemples/${tenseSlug}`);
+    return pathname === tenseSlug;
   };
 
   return (
@@ -53,7 +53,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="flex h-full flex-col">
           {/* Header with logo */}
           <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-4 dark:border-zinc-800">
-            <Link href="/" onClick={onClose} className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+            <Link
+              href="/"
+              onClick={onClose}
+              className="text-xl font-bold text-zinc-900 dark:text-zinc-100"
+            >
               English Verbs
             </Link>
             <button
@@ -134,13 +138,40 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   Temps ({currentVerb})
                 </h3>
                 <div className="space-y-1">
+                  <Link
+                    key={currentVerb}
+                    href={`/verb/${currentVerb}`}
+                    onClick={onClose}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                      isTenseActive(`/verb/${currentVerb}`)
+                        ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                        : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span className="capitalize truncate">{currentVerb}</span>
+                  </Link>
                   {tenses.map((tense) => (
+                    
                     <Link
                       key={tense.slug}
                       href={`/verb/${currentVerb}/exemples/${tense.slug}`}
                       onClick={onClose}
                       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                        isTenseActive(tense.slug)
+                        isTenseActive(`/verb/${currentVerb}/exemples/${tense.slug}`)
                           ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
                           : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                       }`}
@@ -170,8 +201,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Footer */}
           <div className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">Voix</span>
-             <VoiceSelector />
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                Voix
+              </span>
+              <VoiceSelector />
             </div>
           </div>
         </div>
